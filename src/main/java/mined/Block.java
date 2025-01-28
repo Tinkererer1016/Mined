@@ -395,4 +395,5 @@ public class Block {
         int index = getDirectionIndex(direction);
         return neighbors[index] == null || neighbors[index].geometry == null;
     }
+    //test
 }
