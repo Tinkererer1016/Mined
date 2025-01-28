@@ -1,0 +1,94 @@
+plugins {
+    id 'application'
+    id 'java'
+    id 'de.undercouch.download' version '4.1.2'
+    id 'idea'
+}
+
+wrapper {
+    gradleVersion = '8.4'  // Updated from 8.1.1 to support Java 21
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://repo1.maven.org/maven2/org/jmonkeyengine/"
+    }
+}
+
+description = 'Mined application'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+        vendor = JvmVendorSpec.AZUL
+    }
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+ext.jmonkeyengineVersion = '3.3.0-stable'
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+dependencies {
+    implementation platform("org.lwjgl:lwjgl-bom:3.3.2")
+    implementation "org.lwjgl:lwjgl"
+    implementation "org.lwjgl:lwjgl-glfw"
+    implementation "org.lwjgl:lwjgl-opengl"
+    runtimeOnly "org.lwjgl:lwjgl::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-windows"
+    
+    implementation "org.jmonkeyengine:jme3-core:3.3.0-stable"
+    implementation "org.jmonkeyengine:jme3-bullet:3.3.0-stable"
+    implementation "org.jmonkeyengine:jme3-bullet-native:3.3.0-stable"
+    implementation "org.jmonkeyengine:jme3-desktop:3.3.2-stable"
+    implementation "org.jmonkeyengine:jme3-lwjgl:3.3.2-stable"
+    implementation "org.jmonkeyengine:jme3-lwjgl3:3.3.2-stable"
+    implementation "org.jmonkeyengine:jme3-effects:3.3.2-stable"
+    implementation "org.jmonkeyengine:jme3-jogg:3.3.2-stable"
+    implementation "org.jmonkeyengine:jme3-plugins:3.3.2-stable"
+    
+    implementation "org.joml:joml:1.10.0"
+    implementation 'org.ejml:ejml-all:0.41'
+    implementation 'org.ejml:ejml-core:0.38'
+    implementation 'org.ejml:ejml-simple:0.38'
+    implementation 'org.apache.commons:commons-math3:3.6.1'
+    implementation 'javax.vecmath:vecmath:1.5.2'
+}
+
+application {
+    mainClass.set("mined.Main")
+    applicationDefaultJvmArgs = [
+        '-Xms2g',                      // Set initial heap size
+        '-Xmx3g',                      // Set maximum heap size
+        '-XX:+UseG1GC',               // Use G1 garbage collector
+        '-XX:MaxGCPauseMillis=10',    // Set max GC pause time
+        '-XX:+OptimizeStringConcat',  // Optimize string concatenation
+        '-XX:+UseStringDeduplication' // Deduplicate strings
+    ]
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+
+test {
+    useJUnitPlatform()
+    maxHeapSize = "2g"
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'mined.Main',
+            'Implementation-Title': project.name,
+            'Implementation-Version': project.version
+        )
+    }
+}
+
